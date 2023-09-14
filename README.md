@@ -26,6 +26,15 @@ This repository contains a custom Extract, Load, Transform (ELT) project that ut
 
 3. **Database Initialization**: The `init.sql` script initializes the source database with sample data. It creates several tables and populates them with sample data.
 
+## CRON Job Implementation
+
+In this branch, a CRON job has been implemented to automate the ELT process. The CRON job is scheduled to run the ELT script at specified intervals, ensuring that the data in the destination PostgreSQL database is regularly updated with the latest data from the source database.
+
+To configure the CRON job:
+
+1. Currently, the CRON job is setup to run every day at 3am.
+2. You can adjust the time as needed within the Dockerfile found in the `elt_script` folder.
+
 ## Getting Started
 
 1. Ensure you have Docker and Docker Compose installed on your machine.
