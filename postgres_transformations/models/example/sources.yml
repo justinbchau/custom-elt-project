@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: destination_db
+    description: "Raw data from the destination PostgreSQL database."
+    database: destination_db
+    schema: public
+    tables:
+      - name: films
+        description: "List of films."
+      - name: actors
+        description: "List of actors."
+      - name: film_actors
+        description: "Mapping between films and actors."

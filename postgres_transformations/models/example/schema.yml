@@ -2,20 +2,100 @@
 version: 2
 
 models:
-  - name: my_first_dbt_model
-    description: "A starter dbt model"
+  - name: films
+    description: "This table contains details about films."
     columns:
-      - name: id
-        description: "The primary key for this table"
+      - name: film_id
+        description: "Unique identifier for the film."
+        tests:
+          - unique
+          - not_null
+      - name: title
+        description: "Title of the film."
+        tests:
+          - not_null
+      - name: release_date
+        description: "Date the film was released."
+        tests:
+          - not_null
+      - name: price
+        description: "Price to buy a ticket."
+        tests:
+          - not_null
+      - name: rating
+        description: "The MPAA rating of the film."
+        tests:
+          - not_null
+      - name: user_rating
+        description: "Rating that users gave the film."
+        tests:
+          - not_null
+      
+
+  - name: actors
+    description: "This table contains details about actors."
+    columns:
+      - name: actor_id
+        description: "Unique identifier for the actor."
+        tests:
+          - unique
+          - not_null
+      - name: name
+        description: "First name of the actor."
+        tests:
+
+
+  - name: film_actors
+    description: "This table maps films to the actors that starred in them."
+    columns:
+      - name: film_id
+        description: "Identifier for the film."
+        tests:
+          - not_null
+      - name: actor_id
+        description: "Identifier for the actor."
+        tests:
+          - not_null
+  
+  
+  - name: film_ratings
+    description: "This model aggregates film data and calculates the average rating for each film."
+    columns:
+      - name: film_id
+        description: "The unique identifier for each film."
         tests:
           - unique
           - not_null
 
-  - name: my_second_dbt_model
-    description: "A starter dbt model"
-    columns:
-      - name: id
-        description: "The primary key for this table"
+      - name: title
+        description: "The title of the film."
         tests:
-          - unique
+          - not_null
+
+      - name: release_date
+        description: "The release date of the film."
+        tests:
+          - not_null
+
+      - name: price
+        description: "The price of the film."
+        tests:
+          - not_null
+
+      - name: rating
+        description: "The MPAA rating of the film."
+
+      - name: user_rating
+        description: "The average user rating for the film."
+        tests:
+          - not_null
+
+      - name: actor_count
+        description: "The number of actors in the film."
+        tests:
+          - not_null
+
+      - name: avg_actor_rating
+        description: "The average rating of films that the actors of this film have acted in."
+        tests:
           - not_null

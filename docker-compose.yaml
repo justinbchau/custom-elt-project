@@ -20,10 +20,14 @@ services:
       - "5434:5432"
     networks:
       - elt_network
+    depends_on:
+      - source_postgres
     environment:
       POSTGRES_DB: destination_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
+    # volumes:
+    #   - destination_db_data:/var/lib/postgresql/data
 
   elt_script:
     build:
@@ -33,9 +37,33 @@ services:
     networks:
       - elt_network
     depends_on:
-      - source_postgres
       - destination_postgres
+
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:1.4.7
+    command:
+      [
+        "run",
+        "--profiles-dir",
+        "/root",
+        "--project-dir",
+        "/dbt",
+        "--full-refresh"
+      ]
+    networks:
+      - elt_network
+    volumes:
+      - ./postgres_transformations:/dbt
+      - ~/.dbt:/root
+    depends_on:
+      - elt_script
+    environment:
+      DBT_PROFILE: default
+      DBT_TARGET: dev
 
 networks:
   elt_network:
     driver: bridge
+
+volumes:
+  destination_db_data:
