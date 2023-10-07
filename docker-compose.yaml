@@ -39,16 +39,16 @@ services:
     #   depends_on:
     #     - destination_postgres
 
-  dbt:
-    image: ghcr.io/dbt-labs/dbt-postgres:1.4.7
-    networks:
-      - elt_network
-    volumes:
-      - ./postgres_transformations:/dbt
-      - ~/.dbt:/root
-    environment:
-      DBT_PROFILE: default
-      DBT_TARGET: dev
+    # dbt:
+    #   image: ghcr.io/dbt-labs/dbt-postgres:1.4.7
+    #   networks:
+    #     - elt_network
+    #   volumes:
+    #     - ./postgres_transformations:/dbt
+    #     - ~/.dbt:/root
+    #   environment:
+    #     DBT_PROFILE: default
+    #     DBT_TARGET: dev
 
   postgres:
     image: postgres:latest
@@ -72,15 +72,22 @@ services:
                airflow users create --username airflow --password password --firstname John --lastname Doe --role Admin --email admin@example.com"
 
   webserver:
-    image: apache/airflow:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: root
     depends_on:
       - postgres
     networks:
       - elt_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./elt_script:/opt/airflow/elt_script
+      - ./postgres_transformations:/opt/dbt
       - ~/.dbt:/root/.dbt
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - LOAD_EX=n
       - EXECUTOR=Local
@@ -89,26 +96,39 @@ services:
       - AIRFLOW__CORE__FERNET_KEY=plIipb9RU3-3wJ1UNaAtqVNJrqFEks1-dGbJM34EW7U=
       - AIRFLOW__WEBSERVER__DEFAULT_USER_USERNAME=airflow
       - AIRFLOW__WEBSERVER__DEFAULT_USER_PASSWORD=password
+      - AIRFLOW_WWW_USER_USERNAME=airflow
+      - AIRFLOW_WWW_USER_PASSWORD=password
+      - AIRFLOW__WEBSERVER__SECRET_KEY=secret
     ports:
       - "8080:8080"
     command: webserver
 
   scheduler:
-    image: apache/airflow:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: root
     depends_on:
       - postgres
     networks:
       - elt_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./elt_script:/opt/airflow/elt_script
+      - ./postgres_transformations:/dbt
       - ~/.dbt:/root/.dbt
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - LOAD_EX=n
       - EXECUTOR=Local
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW_CONN_DESTINATION_POSTGRES=postgres://postgres:secret@destination_postgres:5434/destination_db
       - AIRFLOW__CORE__FERNET_KEY=plIipb9RU3-3wJ1UNaAtqVNJrqFEks1-dGbJM34EW7U=
+      - AIRFLOW__WEBSERVER__SECRET_KEY=secret
+      - AIRFLOW_WWW_USER_USERNAME=airflow
+      - AIRFLOW_WWW_USER_PASSWORD=password
     command: scheduler
 
 networks:

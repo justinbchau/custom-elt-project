@@ -13,8 +13,6 @@ default_args = {
     'depends_on_past': False,
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=1),
 }
 
 
@@ -32,8 +30,7 @@ dag = DAG(
     'elt_and_dbt',
     default_args=default_args,
     description='An ELT workflow with dbt',
-    schedule_interval=timedelta(days=1),
-    start_date=datetime(2023, 9, 26),
+    start_date=datetime(2023, 10, 3),
     catchup=False,
 )
 
@@ -43,35 +40,9 @@ t1 = PythonOperator(
     dag=dag,
 )
 
-# t2 = DockerOperator(
-#     task_id='run_dbt',
-#     image='ghcr.io/dbt-labs/dbt-postgres:1.4.7',
-#     command=[
-#         "run",
-#         "--profiles-dir",
-#         "/root",
-#         "--project-dir",
-#         "/dbt",
-#         "--full-refresh"
-#     ],
-#     network_mode="elt_network",
-#     mounts=[
-#         Mount(source='/postgres_transformations', target='/dbt', type='bind'),
-#         Mount(source='~/.dbt', target='/root', type='bind'),
-#     ],
-#     environment={
-#         'DBT_PROFILE': 'default',
-#         'DBT_TARGET': 'dev'
-#     },
-#     auto_remove=False,  # Optional: Remove the container when done
-#     dag=dag
-# )
-
 t2 = DockerOperator(
     task_id='dbt_run',
     image='ghcr.io/dbt-labs/dbt-postgres:1.4.7',
-    api_version='auto',
-    auto_remove=True,
     command=[
         "run",
         "--profiles-dir",
@@ -80,19 +51,15 @@ t2 = DockerOperator(
         "/dbt",
         "--full-refresh"
     ],
+    auto_remove=True,
     docker_url="unix://var/run/docker.sock",
     network_mode="bridge",
     mounts=[
-        Mount(source='/postgres_transformations', target='/dbt', type='bind'),
-        Mount(source='~/.dbt', target='/root', type='bind'),
+        Mount(source='/Users/justinchau/Development/data-engineering-db/postgres_transformations',
+              target='/dbt', type='bind'),
+        Mount(source='/Users/justinchau/.dbt', target='/root', type='bind'),
     ],
     dag=dag
 )
-
-# t2 = BashOperator(
-#     task_id='run_dbt',
-#     bash_command='dbt run --profiles-dir /root --project-dir /dbt',
-#     dag=dag,
-# )
 
 t1 >> t2
