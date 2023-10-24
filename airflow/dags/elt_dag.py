@@ -6,7 +6,6 @@ from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.utils.dates import days_ago
 from airflow.providers.airbyte.operators.airbyte import AirbyteTriggerSyncOperator
 
-DAG_ID = 'trigger_airbyte_job'
 # Replace this string with the ID generated from your Airbyte instance
 CONN_ID = 'your_string_here'
 
