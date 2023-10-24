@@ -26,29 +26,6 @@ services:
       POSTGRES_DB: destination_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
-    # volumes:
-    #   - destination_db_data:/var/lib/postgresql/data
-
-    # elt_script:
-    #   build:
-    #     context: ./elt_script # Directory containing the Dockerfile and elt_script.py
-    #     dockerfile: Dockerfile # Name of the Dockerfile, if it's something other than "Dockerfile", specify here
-    #   command: [ "python", "elt_script.py" ]
-    #   networks:
-    #     - elt_network
-    #   depends_on:
-    #     - destination_postgres
-
-    # dbt:
-    #   image: ghcr.io/dbt-labs/dbt-postgres:1.4.7
-    #   networks:
-    #     - elt_network
-    #   volumes:
-    #     - ./postgres_transformations:/dbt
-    #     - ~/.dbt:/root
-    #   environment:
-    #     DBT_PROFILE: default
-    #     DBT_TARGET: dev
 
   postgres:
     image: postgres:latest
@@ -75,7 +52,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    user: root
     depends_on:
       - postgres
     networks:
@@ -107,7 +83,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    user: root
     depends_on:
       - postgres
     networks:
@@ -134,6 +109,7 @@ services:
 networks:
   elt_network:
     driver: bridge
+    external: true
 
 volumes:
   destination_db_data:

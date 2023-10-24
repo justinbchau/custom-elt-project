@@ -1,7 +1,11 @@
-#!/bin/sh
+docker compose up init-airflow
 
-# Start the cron daemon in the background
-cron &
+sleep 5
 
-# Execute the Python script
-python /app/elt_script.py
+docker compose up -d
+
+sleep 5
+
+cd airbyte
+
+docker compose up -d
