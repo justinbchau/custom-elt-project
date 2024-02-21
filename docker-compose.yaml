@@ -2,9 +2,9 @@ version: '3'
 
 services:
   source_postgres:
-    image: postgres:latest
+    image: postgres:15
     ports:
-      - "5433:5432"
+      - '5433:5432'
     networks:
       - elt_network
     environment:
@@ -15,9 +15,9 @@ services:
       - ./source_db_init/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   destination_postgres:
-    image: postgres:latest
+    image: postgres:15
     ports:
-      - "5434:5432"
+      - '5434:5432'
     networks:
       - elt_network
     environment:
@@ -29,7 +29,7 @@ services:
     build:
       context: ./elt_script # Directory containing the Dockerfile and elt_script.py
       dockerfile: Dockerfile # Name of the Dockerfile, if it's something other than "Dockerfile", specify here
-    command: [ "python", "elt_script.py" ]
+    command: ['python', 'elt_script.py']
     networks:
       - elt_network
     depends_on:
