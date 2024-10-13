@@ -117,7 +117,7 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./elt_script:/opt/airflow/elt_script
-      - ./postgres_transformations:/dbt
+      - ./postgres_transformations:/opt/dbt
       - ~/.dbt:/root/.dbt
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
