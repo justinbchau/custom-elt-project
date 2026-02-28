@@ -13,6 +13,12 @@ services:
       POSTGRES_PASSWORD: secret
     volumes:
       - ./source_db_init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
 
   destination_postgres:
     image: postgres:latest
@@ -26,6 +32,12 @@ services:
       POSTGRES_DB: destination_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     # volumes:
     #   - destination_db_data:/var/lib/postgresql/data
 
@@ -37,7 +49,10 @@ services:
     networks:
       - elt_network
     depends_on:
-      - destination_postgres
+      destination_postgres:
+        condition: service_healthy
+      source_postgres:
+        condition: service_healthy
 
   dbt:
     image: ghcr.io/dbt-labs/dbt-postgres:1.4.7
@@ -56,7 +71,9 @@ services:
       - ./postgres_transformations:/dbt
       - ~/.dbt:/root
     depends_on:
-      - elt_script
+      elt_script:
+        condition: service_completed_successfully
+
     environment:
       DBT_PROFILE: default
       DBT_TARGET: dev
